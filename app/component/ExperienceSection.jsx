@@ -1,6 +1,80 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
 const ExperienceSection = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const modalContainerRef = useRef(null);
+  const previouslyFocusedRef = useRef(null);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isModalOpen]);
+
+  // Focus management + Escape close + focus trap
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    previouslyFocusedRef.current = document.activeElement;
+
+    const t = window.setTimeout(() => {
+      modalContainerRef.current?.focus?.();
+    }, 0);
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setIsModalOpen(false);
+        return;
+      }
+
+      if (e.key !== "Tab") return;
+
+      const container = modalContainerRef.current;
+      if (!container) return;
+
+      const focusable = Array.from(
+        container.querySelectorAll(
+          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true");
+
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (e.shiftKey) {
+        if (active === first || !container.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.clearTimeout(t);
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocusedRef.current?.focus?.();
+    };
+  }, [isModalOpen]);
+
   return (
     <section className="experience-section">
 
@@ -190,8 +264,11 @@ const ExperienceSection = () => {
                     Discover premium peptide collections engineered for advanced scientific exploration
                   </p>
 
-                  <button className="btn-luxury viewer-btn">
-                    Explore Collection
+                  <button 
+                    className="btn-luxury viewer-btn"
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    Compatibility Cheat
                   </button>
 
                 </div>
@@ -201,6 +278,313 @@ const ExperienceSection = () => {
 
         </div>
       </div>
+
+      {/* ================= POPUP MODAL ================= */}
+      {isModalOpen && (
+        <div className="experienceoverlays" onClick={() => setIsModalOpen(false)}>
+          <div
+            className="experiencecontainers"
+            ref={modalContainerRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="experiencetitles"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="expheader">
+              <div className="expheadercontent">
+                <div className="expicon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="exptitle" id="experience-modal-title">Peptide Compatibility Cheat Sheet</h2>
+                  <p className="expsubtitle">Research-Backed Stacking Guide</p>
+                </div>
+              </div>
+              <button 
+                className="expclosebtn"
+                onClick={() => setIsModalOpen(false)}
+                aria-label="Close modal"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="expbody">
+              
+              {/* 1. WHY YOU NEED THIS — FIRST */}
+              <div className="expsection exp-why-section">
+                <h3 className="exp-section-title">
+                  <span className="exp-section-icon">💡</span>
+                  Why Researchers Reference This Guide
+                </h3>
+                <div className="exp-why-grid">
+                  <div className="exp-why-card">
+                    <div className="exp-why-number">01</div>
+                    <h4>Instant Compatibility Check</h4>
+                    <p>Eliminates guesswork by showing which peptides work synergistically vs. which compete for the same biological pathways. Reduces risk of redundant stacking.</p>
+                  </div>
+                  <div className="exp-why-card">
+                    <div className="exp-why-number">02</div>
+                    <h4>Cost-Effective Protocols</h4>
+                    <p>Identifies cheaper alternatives that achieve faster results through mechanistic synergy rather than expensive monotherapy escalation.</p>
+                  </div>
+                  <div className="exp-why-card">
+                    <div className="exp-why-number">03</div>
+                    <h4>Faster Onset of Action</h4>
+                    <p>Strategic pairings target complementary pathways (e.g., metabolic regulation + tissue repair), accelerating measurable outcomes vs. single-compound approaches.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. COMPATIBILITY MATRIX */}
+              <div className="expsection">
+                <h3 className="exp-section-title">
+                  <span className="exp-section-icon">🔬</span>
+                  Mechanistic Compatibility Matrix
+                </h3>
+                <div className="exp-compatibility-table">
+                  <div className="exp-table-header">
+                    <div className="exp-th">Combination</div>
+                    <div className="exp-th">Compatibility</div>
+                    <div className="exp-th">Mechanism</div>
+                    <div className="exp-th">Research Tier</div>
+                  </div>
+                  
+                  <div className="exp-table-row exp-compatible">
+                    <div className="exp-td exp-combo-name">
+                      <span className="exp-badge exp-green">✓ Synergistic</span>
+                      Metabolic + Repair
+                    </div>
+                    <div className="exp-td">High</div>
+                    <div className="exp-td">Different biological lanes — no pathway competition</div>
+                    <div className="exp-td"><span className="exp-tier exp-tier-2">Tier 2</span></div>
+                  </div>
+
+                  <div className="exp-table-row exp-compatible">
+                    <div className="exp-td exp-combo-name">
+                      <span className="exp-badge exp-green">✓ Synergistic</span>
+                      Appetite Regulation + Lipolysis
+                    </div>
+                    <div className="exp-td">High</div>
+                    <div className="exp-td">Central + peripheral mechanisms complement each other</div>
+                    <div className="exp-td"><span className="exp-tier exp-tier-1">Tier 1</span></div>
+                  </div>
+
+                  <div className="exp-table-row exp-caution">
+                    <div className="exp-td exp-combo-name">
+                      <span className="exp-badge exp-yellow">⚠ Redundant</span>
+                      GLP-1 + GLP-1 Mimetic
+                    </div>
+                    <div className="exp-td">Low</div>
+                    <div className="exp-td">Same pathway — increased risk without added benefit</div>
+                    <div className="exp-td"><span className="exp-tier exp-tier-3">Tier 3</span></div>
+                  </div>
+
+                  <div className="exp-table-row exp-caution">
+                    <div className="exp-td exp-combo-name">
+                      <span className="exp-badge exp-yellow">⚠ Redundant</span>
+                      Multiple GH Secretagogues
+                    </div>
+                    <div className="exp-td">Low</div>
+                    <div className="exp-td">Identical signaling axis — diminishing returns</div>
+                    <div className="exp-td"><span className="exp-tier exp-tier-4">Tier 4</span></div>
+                  </div>
+
+                  <div className="exp-table-row exp-compatible">
+                    <div className="exp-td exp-combo-name">
+                      <span className="exp-badge exp-green">✓ Synergistic</span>
+                      Weight Loss + Muscle Preservation
+                    </div>
+                    <div className="exp-td">High</div>
+                    <div className="exp-td">Prevents catabolism during caloric deficit</div>
+                    <div className="exp-td"><span className="exp-tier exp-tier-2">Tier 2</span></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. EVIDENCE TIERS */}
+              <div className="expsection">
+                <h3 className="exp-section-title">
+                  <span className="exp-section-icon">📊</span>
+                  Evidence Tier Framework
+                </h3>
+                <div className="exp-tier-grid">
+                  <div className="exp-tier-card exp-tier-1-card">
+                    <div className="exp-tier-label">Tier 1</div>
+                    <p>FDA-approved therapies with large randomized human trials. Foundation of any safe stack.</p>
+                  </div>
+                  <div className="exp-tier-card exp-tier-2-card">
+                    <div className="exp-tier-label">Tier 2</div>
+                    <p>Human trials demonstrating clear biological effects. Strong supporting evidence for research protocols.</p>
+                  </div>
+                  <div className="exp-tier-card exp-tier-3-card">
+                    <div className="exp-tier-label">Tier 3</div>
+                    <p>Small human studies or limited clinical data. Use cautiously — max one per stack.</p>
+                  </div>
+                  <div className="exp-tier-card exp-tier-4-card">
+                    <div className="exp-tier-label">Tier 4</div>
+                    <p>Animal models or anecdotal reports. Experimental only — not for clinical protocols.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. STACKING RULES */}
+              <div className="expsection exp-rules-section">
+                <h3 className="exp-section-title">
+                  <span className="exp-section-icon">⚡</span>
+                  Stacking Protocol Rules
+                </h3>
+                <ul className="exp-rules-list">
+                  <li>
+                    <span className="exp-rule-check">✓</span>
+                    <strong>Start Simple:</strong> Begin with 1–2 compounds maximum. Never introduce multiple peptides simultaneously.
+                  </li>
+                  <li>
+                    <span className="exp-rule-check">✓</span>
+                    <strong>One Tier 3 Max:</strong> Stacks should include at least one Tier 1 therapy and never more than one Tier 3 compound.
+                  </li>
+                  <li>
+                    <span className="exp-rule-check">✓</span>
+                    <strong>Define Metrics:</strong> Establish measurable endpoints (e.g., ≥5% fat loss, preserved lean mass) before starting.
+                  </li>
+                  <li>
+                    <span className="exp-rule-check">✓</span>
+                    <strong>4–8 Week Reassessment:</strong> Every stack needs a review checkpoint. Discontinue if no measurable improvement.
+                  </li>
+                  <li>
+                    <span className="exp-rule-check">✓</span>
+                    <strong>Monitor Baseline:</strong> Track fasting glucose, lipids, CMP, CBC, and IGF-1 when manipulating GH axis.
+                  </li>
+                </ul>
+              </div>
+
+              {/* 5. DOCUMENT LINKS — LAST, AFTER ALL EXPLANATIONS */}
+              <div className="expsection exp-links-section">
+                <h3 className="exp-section-title">
+                  <span className="exp-section-icon">📄</span>
+                  Download Full Reference Documents
+                </h3>
+                <p className="exp-links-intro">
+                  Now that you understand the compatibility framework, access the complete research documentation below for detailed peptide pairing data, dosing protocols, and full mechanistic explanations.
+                </p>
+                <div className="exp-links-grid">
+                  
+                  {/* Link 1 */}
+                  <a 
+                    href="https://1drv.ms/w/c/42e30fa42d16e051/EXaDzN2VM9tGpmL0s_P9ywEBFy4EHHCmi34Ly4Qt5OLTiA?e=IR0Ich"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="exp-doc-link-card"
+                  >
+                    <div className="exp-doc-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                      </svg>
+                    </div>
+                    <div className="exp-doc-info">
+                      <h4>Peptide Research Guide</h4>
+                      <p>Full documentation with detailed compound profiles and research protocols</p>
+                      <span className="exp-doc-action">
+                        View Document
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                          <polyline points="15 3 21 3 21 9"/>
+                          <line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                      </span>
+                    </div>
+                  </a>
+
+                  {/* Link 2 - Cheat Sheet (Featured) */}
+                  <a 
+                    href="https://1drv.ms/w/c/42e30fa42d16e051/EQACzsuBldlGr9EA0ImdBX4BVRyiKAT0qr81h0zIbns5tw?e=5kAlfP"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="exp-doc-link-card exp-featured"
+                  >
+                    <div className="exp-doc-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                      </svg>
+                    </div>
+                    <div className="exp-doc-info">
+                      <div className="exp-doc-badge">Primary Reference</div>
+                      <h4>Peptide Compatibility Cheat Sheet</h4>
+                      <p>Quick-reference chart showing all compatible and incompatible peptide combinations</p>
+                      <span className="exp-doc-action">
+                        View Cheat Sheet
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                          <polyline points="15 3 21 3 21 9"/>
+                          <line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                      </span>
+                    </div>
+                  </a>
+
+                  {/* Link 3 */}
+                  <a 
+                    href="https://onedrive.live.com/:w:/g/personal/42E30FA42D16E051/EXaDzN2VM9tGpmL0s_P9ywEBFy4EHHCmi34Ly4Qt5OLTiA?resid=42E30FA42D16E051!sddcc8376339546dba662f4b3f3fdcb01&ithint=file%2Cdocx&e=IR0Ich&migratedtospo=true&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3cvYy80MmUzMGZhNDJkMTZlMDUxL0VYYUR6TjJWTTl0R3BtTDBzX1A5eXdFQkZ5NEVISENtaTM0THk0UXQ1T0xUaUE_ZT1JUjBJY2g"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="exp-doc-link-card"
+                  >
+                    <div className="exp-doc-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <path d="M12 18v-6"/>
+                        <path d="M8 15l4-3 4 3"/>
+                      </svg>
+                    </div>
+                    <div className="exp-doc-info">
+                      <h4>Advanced Protocol Document</h4>
+                      <p>Extended research protocols with stacking timelines and monitoring guidelines</p>
+                      <span className="exp-doc-action">
+                        View Document
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                          <polyline points="15 3 21 3 21 9"/>
+                          <line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                      </span>
+                    </div>
+                  </a>
+
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="expfooter">
+                <p className="expdisclaimer">
+                  <strong>Research Use Only:</strong> This cheat sheet is for educational and research planning purposes. Always consult qualified research protocols and institutional review boards before implementing peptide combinations.
+                </p>
+                <button 
+                  className="btn-luxury exp-modal-cta-btn"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Got It — Back to Collection
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

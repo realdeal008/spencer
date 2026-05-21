@@ -1,5 +1,9 @@
 "use client";
 
+const scrollToSection = (id) => {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+};
+
 const HeroSection = () => {
   return (
     <section className="hero-section">
