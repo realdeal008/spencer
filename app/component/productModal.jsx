@@ -4,6 +4,7 @@ import { SparklesIcon } from "./icons";
 import { ShoppingBagIcon } from "./icons";
 import { XIcon } from "./icons";
 import { StarIcon } from "./icons";
+import { getPriceForSize } from "./productData";
 
 const sizes = ["10mg", "20mg", "30mg", "40mg", "50mg"];
 
@@ -33,7 +34,7 @@ const ProductModal = ({ product, onClose, onAddToCart }) => {
                                 <p className="modal-category">{product.category}</p>
                                 <h2 className="modal-title">{product.name}</h2>
                                 <div className="modal-price-rating">
-                                    <span className="modal-price">${product.price}</span>
+                                    <span className="modal-price">${getPriceForSize(product, selectedSize)}</span>
                                     <div className="product-rating">
                                         <StarIcon filled={true} />
                                         <span>{product.rating}</span>
@@ -69,11 +70,11 @@ const ProductModal = ({ product, onClose, onAddToCart }) => {
                                     </div>
                                 </div>
 
-                                <button 
+                                <button
                                     className="modal-add-btn"
                                     onClick={() => { onAddToCart(product, selectedSize); onClose(); }}
                                 >
-                                    <ShoppingBagIcon /> Add to Cart — ${product.price}
+                                    <ShoppingBagIcon /> Add to Cart — ${getPriceForSize(product, selectedSize)}
                                 </button>
                             </div>
                         </div>

@@ -180,26 +180,34 @@ const sendConfirmationEmail = async (orderId) => {
     setIsSubmitting(true);
     const orderId = generateOrderId();
 
-    // Send email in background
-    const emailSent = await sendConfirmationEmail(orderId);
+    // Send email silently (no popup)
+    await sendConfirmationEmail(orderId);
 
-    // Show success
+    // Show success with redirect message
     setOrderSuccess(true);
 
-    // Open WhatsApp after brief delay
+    // Open WhatsApp in a popup window (no popup blocker since it's user-initiated)
     setTimeout(() => {
       const whatsappUrl = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${generateWhatsAppMessage(orderId)}`;
-      window.open(whatsappUrl, '_blank');
+      const whatsappWindow = window.open('', 'WhatsApp', 'width=600,height=700');
+      if (whatsappWindow) {
+        whatsappWindow.location.href = whatsappUrl;
+      } else {
+        // Fallback if popup was blocked
+        window.location.href = whatsappUrl;
+      }
 
       // Reset everything
-      setIsSubmitting(false);
-      setOrderSuccess(false);
-      setShowPaymentModal(false);
-      setSelectedPayment(null);
-      setCustomerInfo({ fullName: '', email: '', phone: '', address: '' });
-      setErrors({});
-      onClose();
-    }, 2500);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setOrderSuccess(false);
+        setShowPaymentModal(false);
+        setSelectedPayment(null);
+        setCustomerInfo({ fullName: '', email: '', phone: '', address: '' });
+        setErrors({});
+        onClose();
+      }, 500);
+    }, 2000);
   };
 
   if (!isOpen) return null;

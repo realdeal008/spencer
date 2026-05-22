@@ -1,12 +1,8 @@
 import { useState } from "react"
 
 
-import {
-  ShoppingBagIcon,
-  PlusIcon,
-  StarIcon,
-  CheckIcon,
-} from "./icons";
+import { ShoppingBagIcon, PlusIcon, StarIcon, CheckIcon } from "./icons";
+import { getPriceForSize } from "./productData";
 
 const sizes = [
   "10mg",
@@ -74,7 +70,7 @@ const ProductCard = ({
 
         <div className="product-meta">
           <span className="product-price">
-            ${product.price}
+            ${getPriceForSize(product, selectedSize)}
           </span>
 
           <div className="product-rating">

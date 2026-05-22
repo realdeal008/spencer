@@ -1,3 +1,14 @@
+// Returns price for a given product and size string like "30mg"
+// Uses sizePrices if defined, otherwise uses proportional formula: basePrice * (mg/20)
+export const getPriceForSize = (product, size) => {
+  const mg = parseInt(size.replace("mg", ""));
+  if (product.sizePrices && product.sizePrices[size] !== undefined) {
+    return product.sizePrices[size];
+  }
+  // Default: linear scaling. Base price is for 20mg, so multiply by (mg/20)
+  return Math.round(product.price * (mg / 20));
+};
+
 export const productsData = [
             // SKINCARE
             {
@@ -6,6 +17,7 @@ export const productsData = [
     category: "growth",
     price: 76,
     image: "/pdone.jpeg",
+    sizePrices: null, // null = use price formula: price * (mg/20)
     description: "Advanced peptide compound researched for growth hormone pathway stimulation and cellular performance models.",
     rating: 4.8,
     reviews: 234,
